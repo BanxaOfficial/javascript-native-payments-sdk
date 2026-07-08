@@ -1,5 +1,5 @@
 {
-  "name": "@banxa/javascript-native-payments-sdk",
+  "name": "@banxa-official/javascript-native-payments-sdk",
   "version": "1.0.0",
   "description": "TypeScript SDK for Banxa merchant partners to use Primer SDK for native payments",
   "main": "./dist/api.js",
