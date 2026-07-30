@@ -70,4 +70,4 @@ export {
 } from './web/checkout-layout.js';
 
 // Web utilities
-export { loadPrimerSdk, isPrimerLoaded, initializePrimer } from './web/primer-loader.js';
+export { loadPrimerSdk, isPrimerLoaded } from './web/primer-loader.js';

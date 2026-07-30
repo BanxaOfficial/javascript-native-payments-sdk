@@ -26,6 +26,7 @@ export interface BuyCheckoutFlowOptions {
   skipEligibilityCheck?: boolean;
   primerCheckoutOptions?: {
     locale?: string;
+    merchantDomain?: string;
     layoutMode?: CheckoutLayoutMode;
     checkoutLayout?: CheckoutLayoutConfig;
     checkoutTemplate?: string;
@@ -61,6 +62,7 @@ export async function runBuyCheckoutFlow(
 
     if (primerOptions?.locale) checkout.locale = primerOptions.locale;
     if (primerOptions?.layoutMode) checkout.layoutMode = primerOptions.layoutMode;
+    if (primerOptions?.merchantDomain) checkout.merchantDomain = primerOptions.merchantDomain;
     if (primerOptions?.checkoutLayout) checkout.checkoutLayout = primerOptions.checkoutLayout;
     if (primerOptions?.checkoutTemplate) checkout.checkoutTemplate = primerOptions.checkoutTemplate;
     if (primerOptions?.loaderDisabled) checkout.loaderDisabled = primerOptions.loaderDisabled;

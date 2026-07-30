@@ -38,6 +38,7 @@ export class BanxaPrimerCheckout extends HTMLElement {
     return [
       'client-token',
       'locale',
+      'merchant-domain',
       'loader-disabled',
       'custom-styles',
       'layout-mode',
@@ -73,6 +74,22 @@ export class BanxaPrimerCheckout extends HTMLElement {
       this.removeAttribute('locale');
     }
   }
+
+  /**
+   * Merchant domain passed through to Primer as `options.merchantDomain`
+   * (e.g. for Apple Pay / domain verification).
+   */
+  get merchantDomain(): string | null {
+    return this.getAttribute('merchant-domain');
+  }
+
+  set merchantDomain(value: string | null) {
+    if (value) {
+      this.setAttribute('merchant-domain', value);
+    } else {
+      this.removeAttribute('merchant-domain');
+    }
+  }  
 
   get loaderDisabled(): boolean {
     return this.hasAttribute('loader-disabled');
@@ -152,7 +169,11 @@ export class BanxaPrimerCheckout extends HTMLElement {
 
     if (name === 'client-token' && newValue) {
       this.initializeCheckout();
-    } else if (name === 'locale' && this.clientToken && this.container) {
+    } else if (
+      (name === 'locale' || name === 'merchant-domain') &&
+      this.clientToken &&
+      this.container
+    ) {
       const checkout = this.container.querySelector('primer-checkout');
       if (checkout) {
         this.applyCheckoutOptions(checkout as PrimerCheckoutElement);
@@ -331,6 +352,7 @@ export class BanxaPrimerCheckout extends HTMLElement {
     const options: PrimerCheckoutOptions = {};
 
     if (this.locale) options.locale = this.locale;
+    if (this.merchantDomain) options.merchantDomain = this.merchantDomain;
 
     const enabledPaymentMethods = getEnabledPaymentMethodsFromLayout(layout);
     if (enabledPaymentMethods?.length) {

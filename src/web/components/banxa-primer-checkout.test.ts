@@ -39,6 +39,13 @@ describe('BanxaPrimerCheckout', () => {
       expect(element.locale).toBe('en');
     });
 
+    it('should get and set merchantDomain', () => {
+      element.merchantDomain = 'checkout.merchant.com';
+      expect(element.merchantDomain).toBe('checkout.merchant.com');
+      expect(element.getAttribute('merchant-domain')).toBe('checkout.merchant.com');
+    });
+
+
     it('should get and set loaderDisabled', () => {
       expect(element.loaderDisabled).toBe(false);
       element.loaderDisabled = true;
@@ -93,7 +100,10 @@ describe('BanxaPrimerCheckout', () => {
         expect(element.shadowRoot?.querySelector('primer-checkout')).not.toBeNull();
       });
 
-      const primerCheckout = element.shadowRoot?.querySelector('primer-checkout')!;
+      const primerCheckout = element.shadowRoot!.querySelector('primer-checkout');
+      if (!primerCheckout) {
+        throw new Error('expected primer-checkout in shadow root');
+      }
       const host = document.createElement('span');
       const circularDetail = {
         paymentMethods: [{ type: 'PAYMENT_CARD', displayName: 'Card' }],
@@ -162,6 +172,17 @@ describe('BanxaPrimerCheckout', () => {
           | (HTMLElement & { options?: { enabledPaymentMethods?: string[] } })
           | null;
         expect(checkout?.options?.enabledPaymentMethods).toBeUndefined();
+      });
+    });
+
+    it('passes merchantDomain through to primer-checkout options', async () => {
+      element.merchantDomain = 'checkout.merchant.com';
+      element.clientToken = 'test-token';
+      await vi.waitFor(() => {
+        const checkout = element.shadowRoot?.querySelector('primer-checkout') as
+          | (HTMLElement & { options?: { merchantDomain?: string } })
+          | null;
+        expect(checkout?.options?.merchantDomain).toBe('checkout.merchant.com');
       });
     });
 

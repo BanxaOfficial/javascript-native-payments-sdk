@@ -63,11 +63,19 @@ describe('runBuyCheckoutFlow', () => {
       nativeToken: 'primer-token-123',
     });
 
-    const result = await runBuyCheckoutFlow({ client, request, container });
+    const result = await runBuyCheckoutFlow({
+      client,
+      request,
+      container,
+      primerCheckoutOptions: {
+        merchantDomain: 'checkout.merchant.com',
+      },
+    });
 
     expect(result.mode).toBe('primer');
     expect(result.element).toBeInstanceOf(BanxaPrimerCheckout);
     expect((result.element as BanxaPrimerCheckout).clientToken).toBe('primer-token-123');
+    expect((result.element as BanxaPrimerCheckout).merchantDomain).toBe('checkout.merchant.com');
     expect(container.querySelector('banxa-primer-checkout')).not.toBeNull();
   });
 

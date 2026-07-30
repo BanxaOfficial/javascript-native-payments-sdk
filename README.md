@@ -258,7 +258,7 @@ if (mode === 'primer') {
 | Option | Description |
 |--------|-------------|
 | `skipEligibilityCheck` | Skip `POST /eligibility` and assume payment-ready |
-| `primerCheckoutOptions` | Pass-through for `locale`, `layoutMode`, `checkoutLayout`, `checkoutTemplate`, `loaderDisabled`, `customStyles` on native checkout |
+| `primerCheckoutOptions` | Pass-through for `locale`, `merchantDomain`, `layoutMode`, `checkoutLayout`, `checkoutTemplate`, `loaderDisabled`, `customStyles` on native checkout |
 
 Use the same `redirectUrl` on your checkout page origin so the iframe can detect return navigation when Banxa redirects after KYC or payment.
 
@@ -268,6 +268,7 @@ Use the same `redirectUrl` on your checkout page origin so the iframe can detect
 |-----------|-------------|
 | `client-token` | **Required.** Primer client token (`order.nativeToken` from `createOrder`) |
 | `locale` | Locale string (e.g. `en`) |
+| `merchant-domain` | Merchant domain passed to Primer as `options.merchantDomain` |
 | `layout-mode` | `preset` (default), `auto`, or `custom` |
 | `payment-methods` | Comma-separated Primer types for preset mode (e.g. `PAYMENT_CARD,APPLE_PAY`) |
 | `loader-disabled` | Disable the loading placeholder |
@@ -279,6 +280,7 @@ Use the same `redirectUrl` on your checkout page origin so the iframe can detect
 |----------|-------------|
 | `clientToken` | Get/set `client-token` attribute |
 | `locale` | Get/set locale |
+| `merchantDomain` | Get/set `merchant-domain` attribute |
 | `layoutMode` | Get/set `layout-mode` |
 | `paymentMethods` | Get/set `payment-methods` |
 | `checkoutLayout` | Programmatic `CheckoutLayoutConfig` (merged with attributes) |
