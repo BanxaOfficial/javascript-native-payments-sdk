@@ -57,6 +57,21 @@ export * from './types/index.js';
 
 // Web Components
 export { BanxaPrimerCheckout } from './web/components/banxa-primer-checkout.js';
+export { BanxaHostedCheckout } from './web/components/banxa-hosted-checkout.js';
+export {
+  BanxaHostedKyc,
+  BANXA_KYC_MESSAGE_TYPES,
+  BANXA_KYC_EVENTS,
+} from './web/components/banxa-hosted-kyc.js';
+
+// Hosted KYC flow
+export { runKycFlow } from './web/kyc-flow.js';
+export type {
+  KycFlowOptions,
+  KycFlowSessionOptions,
+  KycFlowClientOptions,
+  KycFlowResult,
+} from './web/kyc-flow.js';
 
 // Checkout layout
 export {

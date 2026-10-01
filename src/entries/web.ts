@@ -6,13 +6,33 @@
 
 export { BanxaPrimerCheckout } from '../web/components/banxa-primer-checkout.js';
 export { BanxaHostedCheckout } from '../web/components/banxa-hosted-checkout.js';
+export {
+  BanxaHostedKyc,
+  BANXA_KYC_MESSAGE_TYPES,
+  BANXA_KYC_EVENTS,
+} from '../web/components/banxa-hosted-kyc.js';
+export type { BanxaKycEventName } from '../web/components/banxa-hosted-kyc.js';
 export { loadPrimerSdk, isPrimerLoaded } from '../web/primer-loader.js';
 export {
   registerBanxaPrimerCheckout,
   registerBanxaHostedCheckout,
   registerBanxaCheckout,
+  registerBanxaHostedKyc,
+  registerBanxaElements,
 } from '../web/register-checkout.js';
 export { runBuyCheckoutFlow } from '../web/buy-checkout-flow.js';
+export { runKycFlow } from '../web/kyc-flow.js';
+export type {
+  KycFlowOptions,
+  KycFlowSessionOptions,
+  KycFlowClientOptions,
+  KycFlowResult,
+} from '../web/kyc-flow.js';
+export type {
+  KycTier,
+  CreateKycSessionRequest,
+  KycSession,
+} from '../types/banxa.js';
 export type {
   BuyCheckoutFlowMode,
   BuyCheckoutFlowResult,

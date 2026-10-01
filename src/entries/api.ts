@@ -38,4 +38,7 @@ export type {
   IdentityDocument,
   SumsubTokenRequest,
   WebhookPayload,
+  KycTier,
+  CreateKycSessionRequest,
+  KycSession,
 } from '../types/banxa.js';

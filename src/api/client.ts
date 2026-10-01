@@ -16,6 +16,8 @@ import type {
   CreateOrderRequest,
   Order,
   OrderEligibilityResponse,
+  CreateKycSessionRequest,
+  KycSession,
   BanxaEnvironment,
   BanxaOrderTypePath,
   FiatCurrency,
@@ -25,6 +27,7 @@ import {
   serializeCreateOrderRequest,
   serializeOrderEligibilityRequest,
 } from './serialize-create-order.js';
+import { serializeCreateKycSessionRequest } from './serialize-create-kyc-session.js';
 import { createBanxaHeaders } from '../utils/headers.js';
 
 export class BanxaApiClient {
@@ -158,6 +161,17 @@ export class BanxaApiClient {
 
   async createOrder(request: CreateOrderRequest): Promise<Order> {
     return this.request<Order>('POST', '/buy', serializeCreateOrderRequest(request));
+  }
+
+  /**
+   * Starts a hosted KYC session, so a customer can be verified before any order exists.
+   */
+  async createKycSession(request: CreateKycSessionRequest): Promise<KycSession> {
+    return this.request<KycSession>(
+      'POST',
+      '/kyc/sessions',
+      serializeCreateKycSessionRequest(request),
+    );
   }
 
   async getOrder(orderId: string): Promise<Order> {

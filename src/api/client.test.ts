@@ -369,4 +369,79 @@ describe('BanxaApiClient', () => {
       );
     });
   });
+
+  describe('createKycSession', () => {
+    const mockSession = {
+      data: {
+        redirectUrl: 'https://checkout.banxa-sandbox.com/kyc-transit?d=abc123',
+        expiresAt: '2026-09-23T11:00:00+00:00',
+      },
+    };
+
+    it('should POST to /kyc/sessions and return the session', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockSession),
+      } as Response);
+
+      const result = await client.createKycSession({ externalCustomerId: 'user-123' });
+
+      expect(result).toEqual(mockSession.data);
+      expect(fetch).toHaveBeenCalledWith(
+        'https://api.banxa-sandbox.com/test-partner/v2/kyc/sessions',
+        expect.objectContaining({ method: 'POST' }),
+      );
+    });
+
+    it('should omit optional fields the partner did not supply', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockSession),
+      } as Response);
+
+      await client.createKycSession({ externalCustomerId: 'user-123' });
+
+      const body = JSON.parse((fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body);
+      expect(body).toEqual({ externalCustomerId: 'user-123' });
+    });
+
+    it('should send tier, country and returnUrl when supplied', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockSession),
+      } as Response);
+
+      await client.createKycSession({
+        externalCustomerId: 'user-123',
+        tier: 'enhanced',
+        country: 'AU',
+        returnUrl: 'myapp://kyc/done',
+      });
+
+      const body = JSON.parse((fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body);
+      expect(body).toEqual({
+        externalCustomerId: 'user-123',
+        tier: 'enhanced',
+        country: 'AU',
+        returnUrl: 'myapp://kyc/done',
+      });
+    });
+
+    it('should surface a 403 with its status code so "not enabled" is distinguishable from "retry"', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 403,
+        statusText: 'Forbidden',
+        text: () => Promise.resolve('{"message":"Hosted KYC is not enabled for this merchant."}'),
+      } as Response);
+
+      await expect(client.createKycSession({ externalCustomerId: 'user-123' })).rejects.toThrow(
+        BanxaApiError,
+      );
+
+      await expect(
+        client.createKycSession({ externalCustomerId: 'user-123' }),
+      ).rejects.toMatchObject({ statusCode: 403 });
+    });
+  });
 });

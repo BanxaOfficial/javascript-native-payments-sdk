@@ -1,5 +1,6 @@
 import { BanxaPrimerCheckout } from './components/banxa-primer-checkout.js';
 import { BanxaHostedCheckout } from './components/banxa-hosted-checkout.js';
+import { BanxaHostedKyc } from './components/banxa-hosted-kyc.js';
 
 /**
  * Register the `<banxa-primer-checkout>` custom element.
@@ -31,4 +32,24 @@ export function registerBanxaHostedCheckout(): void {
 export function registerBanxaCheckout(): void {
   registerBanxaPrimerCheckout();
   registerBanxaHostedCheckout();
+}
+
+/**
+ * Register the `<banxa-hosted-kyc>` custom element.
+ */
+export function registerBanxaHostedKyc(): void {
+  if (typeof customElements === 'undefined') {
+    throw new Error('registerBanxaHostedKyc() requires a browser environment');
+  }
+  if (!customElements.get('banxa-hosted-kyc')) {
+    customElements.define('banxa-hosted-kyc', BanxaHostedKyc);
+  }
+}
+
+/**
+ * Registers every Banxa custom element — checkout and hosted KYC.
+ */
+export function registerBanxaElements(): void {
+  registerBanxaCheckout();
+  registerBanxaHostedKyc();
 }
