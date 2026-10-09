@@ -75,7 +75,13 @@ export class BanxaApiClient {
 
     const json = (await response.json()) as BanxaApiResponse<T> | T;
 
-    if (json && typeof json === 'object' && 'errors' in json && Array.isArray(json.errors) && json.errors.length > 0) {
+    if (
+      json &&
+      typeof json === 'object' &&
+      'errors' in json &&
+      Array.isArray(json.errors) &&
+      json.errors.length > 0
+    ) {
       throw new BanxaApiError(
         json.errors.map((e: BanxaApiErrorItem) => e.message).join(', '),
         response.status,
@@ -84,7 +90,12 @@ export class BanxaApiClient {
       );
     }
 
-    if (json && typeof json === 'object' && 'data' in json && (json as BanxaApiResponse<T>).data !== undefined) {
+    if (
+      json &&
+      typeof json === 'object' &&
+      'data' in json &&
+      (json as BanxaApiResponse<T>).data !== undefined
+    ) {
       return (json as BanxaApiResponse<T>).data;
     }
 
@@ -127,10 +138,7 @@ export class BanxaApiClient {
     return this.request<PaymentMethodResponse>('GET', endpoint);
   }
 
-  async getQuote(
-    request: QuoteRequest,
-    orderType: BanxaOrderTypePath = 'buy',
-  ): Promise<Quote> {
+  async getQuote(request: QuoteRequest, orderType: BanxaOrderTypePath = 'buy'): Promise<Quote> {
     const params = new URLSearchParams();
     params.append('fiat', request.fiat);
     params.append('crypto', request.crypto);

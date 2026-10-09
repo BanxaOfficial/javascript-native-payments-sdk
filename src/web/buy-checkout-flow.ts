@@ -1,9 +1,5 @@
 import type { BanxaApiClient } from '../api/client.js';
-import type {
-  CreateOrderRequest,
-  Order,
-  OrderEligibilityResponse,
-} from '../types/banxa.js';
+import type { CreateOrderRequest, Order, OrderEligibilityResponse } from '../types/banxa.js';
 import type { CheckoutLayoutConfig, CheckoutLayoutMode } from '../types/checkout-layout.js';
 import { BanxaHostedCheckout } from './components/banxa-hosted-checkout.js';
 import { BanxaPrimerCheckout } from './components/banxa-primer-checkout.js';

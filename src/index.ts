@@ -1,19 +1,19 @@
 /**
  * Banxa Native Payments SDK
- * 
+ *
  * A TypeScript SDK enabling Banxa merchant partners to use the Primer SDK for native payments.
- * 
+ *
  * @example
  * ```typescript
  * // Backend API Client
  * import { BanxaApiClient } from '@banxa/native-payments-sdk';
- * 
+ *
  * const client = new BanxaApiClient({
  *   apiKey: 'your-api-key',
  *   partner: 'your-partner-id',
  *   environment: 'sandbox'
  * });
- * 
+ *
  * // Create an order
  * const order = await client.createOrder({
  *   account_reference: 'user-123',
@@ -23,11 +23,11 @@
  *   wallet_address: '0x...',
  *   return_url_on_success: 'https://yoursite.com/success'
  * });
- * 
+ *
  * // Use the primerToken from the order response
  * const primerToken = order.primerToken;
  * ```
- * 
+ *
  * @example
  * ```html
  * <!-- Frontend Web Component -->
@@ -37,7 +37,7 @@
  *   layout-mode="preset"
  *   payment-methods="PAYMENT_CARD,APPLE_PAY">
  * </banxa-primer-checkout>
- * 
+ *
  * <script>
  *   const checkout = document.querySelector('banxa-primer-checkout');
  *   checkout.addEventListener('banxa:payment-success', (e) => {
@@ -45,7 +45,7 @@
  *   });
  * </script>
  * ```
- * 
+ *
  * @module @banxa/native-payments-sdk
  */
 

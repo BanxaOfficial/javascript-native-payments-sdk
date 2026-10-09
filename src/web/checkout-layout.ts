@@ -48,10 +48,7 @@ export function buildPaymentMethodMarkup(
   return `<primer-payment-method type="${entry.type}"${disabledAttr}>${inner}</primer-payment-method>`;
 }
 
-function resolveCardFormFields(
-  entry: PaymentMethodLayoutEntry,
-  mode: CheckoutLayoutMode,
-): string {
+function resolveCardFormFields(entry: PaymentMethodLayoutEntry, mode: CheckoutLayoutMode): string {
   if (entry.cardFormHtml && mode === 'preset') {
     console.warn(
       '[@banxa/native-payments-sdk] cardFormHtml is ignored in preset layout mode. ' +

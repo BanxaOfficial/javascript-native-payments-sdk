@@ -42,7 +42,8 @@ describe('BanxaApiClient', () => {
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ data: [{ id: 'USD', description: 'US Dollar', symbol: '$' }] }),
+          json: () =>
+            Promise.resolve({ data: [{ id: 'USD', description: 'US Dollar', symbol: '$' }] }),
         } as Response)
         .mockResolvedValueOnce({
           ok: true,
@@ -341,15 +342,16 @@ describe('BanxaApiClient', () => {
     it('should pass orderType in quote path', async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({
-          data: {
-            paymentMethodId: 'card',
-            cryptoAmount: '1',
-            fiatAmount: '100',
-            processingFee: '0',
-            networkFee: '0',
-          },
-        }),
+        json: () =>
+          Promise.resolve({
+            data: {
+              paymentMethodId: 'card',
+              cryptoAmount: '1',
+              fiatAmount: '100',
+              processingFee: '0',
+              networkFee: '0',
+            },
+          }),
       } as Response);
 
       await client.getQuote(

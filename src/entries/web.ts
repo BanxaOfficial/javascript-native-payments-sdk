@@ -28,11 +28,7 @@ export type {
   KycFlowClientOptions,
   KycFlowResult,
 } from '../web/kyc-flow.js';
-export type {
-  KycTier,
-  CreateKycSessionRequest,
-  KycSession,
-} from '../types/banxa.js';
+export type { KycTier, CreateKycSessionRequest, KycSession } from '../types/banxa.js';
 export type {
   BuyCheckoutFlowMode,
   BuyCheckoutFlowResult,
@@ -46,9 +42,7 @@ export type {
   PrimerPaymentMethodType,
 } from '../types/checkout-layout.js';
 export { PrimerPaymentMethodTypes } from '../types/checkout-layout.js';
-export {
-  DEFAULT_CARD_FORM_HTML,
-} from '../web/checkout-layout.js';
+export { DEFAULT_CARD_FORM_HTML } from '../web/checkout-layout.js';
 
 export type {
   PrimerCheckoutOptions,
