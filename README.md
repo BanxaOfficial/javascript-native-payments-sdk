@@ -1,6 +1,6 @@
 # Banxa Native Payments SDK
 
-A TypeScript SDK for Banxa merchant partners integrating [Primer](https://primer.io) native payments. It provides a **Node-safe REST client** for the Banxa v2 API and **browser web components** for native Primer checkout and hosted Banxa checkout.
+A TypeScript SDK for Banxa merchant partners integrating [Primer](https://primer.io) native payments. It provides a **Node-safe REST client** for the Banxa v2 API and **browser web components** for native Primer checkout, hosted Banxa checkout, and hosted KYC.
 
 ## Features
 
@@ -8,6 +8,7 @@ A TypeScript SDK for Banxa merchant partners integrating [Primer](https://primer
 - **Native checkout** (`<banxa-primer-checkout>`) — configurable Primer checkout layouts
 - **Hosted checkout** (`<banxa-hosted-checkout>`) — iframe fallback when native payments are not ready
 - **Buy flow helper** (`runBuyCheckoutFlow`) — eligibility check, order creation, and automatic UI selection
+- **Hosted KYC** (`<banxa-hosted-kyc>`, `runKycFlow`) — verify a customer before any order exists, to unlock native payments — see [Hosted KYC](#hosted-kyc)
 - **x-api-key authentication** for all Banxa API requests
 - **TypeScript** types for Banxa API and Primer checkout
 - **Dual module output** (ESM + CJS) with separate `/api` and `/web` entry points
@@ -128,6 +129,9 @@ class BanxaApiClient {
 
   // GET /orders/{orderId}
   getOrder(orderId: string): Promise<Order>;
+
+  // POST /kyc/sessions — verify a customer before any order exists
+  createKycSession(request: CreateKycSessionRequest): Promise<KycSession>;
 }
 ```
 
@@ -194,6 +198,26 @@ Common fields from `POST /buy`:
 
 `getOrder` may also return legacy snake_case fields (`status`, `source`, `target`, etc.).
 
+### `CreateKycSessionRequest` / `KycSession` (`POST /kyc/sessions`)
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `externalCustomerId` | Yes | Your customer reference. Max 255 characters — longer values are rejected, not truncated |
+| `tier` | No | `standard` (default), `express` or `enhanced` |
+| `country` | No | ISO 3166-1 alpha-2 hint; the customer confirms it in the flow |
+| `returnUrl` | No | Where the customer is sent afterwards. URL or app deep link |
+
+Response:
+
+| Field | Description |
+|-------|-------------|
+| `redirectUrl` | One-time link into the hosted verification flow |
+| `expiresAt` | ISO-8601 — the life of the link |
+
+Sessions are idempotent per (merchant, `externalCustomerId`) for one hour, so a repeat request
+returns the original link. `express` resolves to the region's standard band here, because a session
+created before an order has no payment provider to supply identity data.
+
 ### Currency types (v2)
 
 `FiatCurrency`: `id`, `description`, `symbol`, optional `supportedPaymentMethods`
@@ -213,8 +237,10 @@ registerBanxaCheckout(); // registers <banxa-primer-checkout> and <banxa-hosted-
 Or register individually:
 
 ```typescript
-import { registerBanxaPrimerCheckout, registerBanxaHostedCheckout } from '@banxa/native-payments-sdk/web';
+import { registerBanxaPrimerCheckout, registerBanxaHostedCheckout, registerBanxaHostedKyc } from '@banxa/native-payments-sdk/web';
 ```
+
+`registerBanxaElements()` registers all three, including `<banxa-hosted-kyc>`.
 
 ### Eligibility-aware buy flow
 
@@ -377,6 +403,134 @@ Embeds Banxa hosted checkout (`order.checkoutUrl`) in an iframe. Use when eligib
 | `banxa:checkout-success` | Iframe navigated to return success URL |
 | `banxa:checkout-failure` | Iframe navigated to return failure URL |
 | `banxa:checkout-cancelled` | Iframe navigated to return cancel URL |
+
+For verification rather than checkout, see [Hosted KYC](#hosted-kyc).
+
+## Hosted KYC
+
+Verify a customer **before any order exists**, so partners who do not run their own KYC can still
+use native payments. Request types are in the [API reference](#createkycsessionrequest--kycsession-post-kycsessions).
+
+### 1. Backend — create a verification session
+
+```typescript
+import { BanxaApiClient } from '@banxa/native-payments-sdk/api';
+
+const client = new BanxaApiClient({
+  apiKey: process.env.BANXA_API_KEY!,
+  partner: process.env.BANXA_PARTNER!,
+  environment: 'sandbox', // 'sandbox' | 'production'
+});
+
+const session = await client.createKycSession({
+  externalCustomerId: 'user-123',
+  tier: 'standard', // optional — 'standard' | 'express' | 'enhanced'
+  country: 'AU', // optional
+  returnUrl: 'https://yoursite.com/kyc/done', // optional; a deep link works too
+});
+
+// Hand redirectUrl and expiresAt to the browser
+const { redirectUrl, expiresAt } = session;
+```
+
+`createKycSession` calls `POST /v2/kyc/sessions`. The API key must never reach the browser, and
+`returnUrl` is set here rather than on the element — the hosted flow reads it from the session.
+
+### 2. Frontend — mount the flow
+
+```html
+<div id="kyc"></div>
+
+<script type="module">
+  import { runKycFlow } from '@banxa/native-payments-sdk/web';
+
+  const session = await (await fetch('/api/kyc-session')).json();
+
+  const { element } = await runKycFlow({
+    session,
+    container: document.getElementById('kyc'),
+  });
+
+  element.addEventListener('banxa:kyc-complete', () => {
+    showPendingScreen();
+  });
+
+  element.addEventListener('banxa:kyc-error', (event) => {
+    console.error('Verification error', event.detail);
+  });
+</script>
+```
+
+`runKycFlow` registers `<banxa-hosted-kyc>`, mounts the session, and returns the element. Sessions
+are idempotent per customer for an hour, so remounting is safe.
+
+> **`banxa:kyc-complete` does not mean verified.** It means *submitted and under review* — the
+> identity provider decides asynchronously. Wait for the merchant webhook before creating an order.
+> There is deliberately no status endpoint to poll.
+
+Once the webhook reports the customer verified, create the order as usual — `checkOrderEligibility`
+returns `paymentReady: true` and the customer gets native Primer checkout instead of hosted.
+
+### `<banxa-hosted-kyc>`
+
+Embeds the Banxa hosted verification flow (`session.redirectUrl`) in an iframe. Use it to verify a customer before any order exists. Every attribute takes effect after mount, not only before it.
+
+| Attribute | Description |
+|-----------|-------------|
+| `session-url` | **Required.** `redirectUrl` from `createKycSession` |
+| `expires-at` | `expiresAt` from the session. An expired link is refused rather than mounted |
+| `iframe-title` | Accessible iframe title (default: `Banxa verification`) |
+| `custom-styles` | CSS injected into the shadow root |
+| `allowed-origins` | Comma-separated extra origins whose messages are accepted, on top of the session link's own |
+
+| Event | Description |
+|-------|-------------|
+| `banxa:kyc-complete` | The customer finished and is **under review**. Fires once per session |
+| `banxa:kyc-error` | Verification reported an error, or the session had already expired |
+| `banxa:kyc-ready` | The hosted flow rendered |
+| `banxa:kyc-loading` | The hosted flow is loading |
+| `banxa:kyc-message-rejected` | Diagnostic — a `banxa:*` message arrived but was not accepted |
+
+`runKycFlow` also accepts `{ client, request }` instead of `{ session }` for local development.
+Avoid it in production: `BanxaApiClient` carries your partner API key, and constructing it in the
+browser publishes that key to everyone who loads the page.
+
+### Camera and microphone
+
+Document and liveness capture run inside the iframe, so the SDK always mounts it with
+`allow="camera; microphone"`. That is a Permissions Policy grant, separate from `sandbox` — without
+it `getUserMedia()` is rejected and capture fails. Set it yourself if you mount your own iframe.
+
+### Merchant configuration
+
+`banxa:kyc-complete` requires the merchant to be set up for embedded mode —
+`embeddedButtonOnlyIframeEnabled`, and `embeddedAPMerchantDomain` matching the origin serving your
+page. Ask your Banxa contact to set both.
+
+| Embedded mode | What you get |
+|---|---|
+| Configured | `banxa:kyc-complete` on the element |
+| Not configured | Your page is navigated to `returnUrl`. Handle it as a normal route |
+
+Keep `returnUrl` lowercase — the hosted flow lowercases it before redirecting, so a case-sensitive
+token or reference arrives corrupted.
+
+### When completion does not arrive
+
+Messages are accepted only from the frame the SDK mounted, at an origin it accepts. One that fails
+either check is reported rather than dropped:
+
+```typescript
+element.addEventListener('banxa:kyc-message-rejected', (event) => {
+  console.warn('Rejected', event.detail); // { reason, type, origin, acceptedOrigins }
+});
+```
+
+| What you see | What it means |
+|---|---|
+| No event at all | The flow never posted — check the merchant configuration above |
+| `reason: "origin"` | The flow serves from a host the session link did not name; add it to `allowed-origins` |
+| `reason: "source"` | The message came from a window other than the mounted frame |
 
 ## Complete integration example
 

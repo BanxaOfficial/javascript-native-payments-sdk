@@ -45,7 +45,6 @@ describe('BanxaPrimerCheckout', () => {
       expect(element.getAttribute('merchant-domain')).toBe('checkout.merchant.com');
     });
 
-
     it('should get and set loaderDisabled', () => {
       expect(element.loaderDisabled).toBe(false);
       element.loaderDisabled = true;

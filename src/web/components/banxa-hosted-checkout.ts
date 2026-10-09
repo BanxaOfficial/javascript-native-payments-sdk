@@ -174,9 +174,7 @@ export class BanxaHostedCheckout extends HTMLElement {
       <div class="hosted-checkout-container" id="hosted-checkout-container"></div>
     `;
 
-    this.container = this.shadowRoot.querySelector(
-      '#hosted-checkout-container',
-    ) as HTMLDivElement;
+    this.container = this.shadowRoot.querySelector('#hosted-checkout-container') as HTMLDivElement;
   }
 
   private mountIframe(): void {

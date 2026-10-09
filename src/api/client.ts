@@ -16,6 +16,8 @@ import type {
   CreateOrderRequest,
   Order,
   OrderEligibilityResponse,
+  CreateKycSessionRequest,
+  KycSession,
   BanxaEnvironment,
   BanxaOrderTypePath,
   FiatCurrency,
@@ -25,6 +27,7 @@ import {
   serializeCreateOrderRequest,
   serializeOrderEligibilityRequest,
 } from './serialize-create-order.js';
+import { serializeCreateKycSessionRequest } from './serialize-create-kyc-session.js';
 import { createBanxaHeaders } from '../utils/headers.js';
 
 export class BanxaApiClient {
@@ -72,7 +75,13 @@ export class BanxaApiClient {
 
     const json = (await response.json()) as BanxaApiResponse<T> | T;
 
-    if (json && typeof json === 'object' && 'errors' in json && Array.isArray(json.errors) && json.errors.length > 0) {
+    if (
+      json &&
+      typeof json === 'object' &&
+      'errors' in json &&
+      Array.isArray(json.errors) &&
+      json.errors.length > 0
+    ) {
       throw new BanxaApiError(
         json.errors.map((e: BanxaApiErrorItem) => e.message).join(', '),
         response.status,
@@ -81,7 +90,12 @@ export class BanxaApiClient {
       );
     }
 
-    if (json && typeof json === 'object' && 'data' in json && (json as BanxaApiResponse<T>).data !== undefined) {
+    if (
+      json &&
+      typeof json === 'object' &&
+      'data' in json &&
+      (json as BanxaApiResponse<T>).data !== undefined
+    ) {
       return (json as BanxaApiResponse<T>).data;
     }
 
@@ -124,10 +138,7 @@ export class BanxaApiClient {
     return this.request<PaymentMethodResponse>('GET', endpoint);
   }
 
-  async getQuote(
-    request: QuoteRequest,
-    orderType: BanxaOrderTypePath = 'buy',
-  ): Promise<Quote> {
+  async getQuote(request: QuoteRequest, orderType: BanxaOrderTypePath = 'buy'): Promise<Quote> {
     const params = new URLSearchParams();
     params.append('fiat', request.fiat);
     params.append('crypto', request.crypto);
@@ -158,6 +169,17 @@ export class BanxaApiClient {
 
   async createOrder(request: CreateOrderRequest): Promise<Order> {
     return this.request<Order>('POST', '/buy', serializeCreateOrderRequest(request));
+  }
+
+  /**
+   * Starts a hosted KYC session, so a customer can be verified before any order exists.
+   */
+  async createKycSession(request: CreateKycSessionRequest): Promise<KycSession> {
+    return this.request<KycSession>(
+      'POST',
+      '/kyc/sessions',
+      serializeCreateKycSessionRequest(request),
+    );
   }
 
   async getOrder(orderId: string): Promise<Order> {

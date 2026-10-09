@@ -174,6 +174,26 @@ export interface OrderEligibilityResponse {
   requirements?: string[];
 }
 
+/**
+ * Verification depth requested for a hosted KYC session.
+ */
+export type KycTier = 'standard' | 'express' | 'enhanced';
+
+/** Request body for POST /kyc/sessions. */
+export interface CreateKycSessionRequest {
+  externalCustomerId: string;
+  /** Defaults to `standard` when omitted. */
+  tier?: KycTier;
+  country?: string;
+  returnUrl?: string;
+}
+
+/** Response from POST /kyc/sessions. */
+export interface KycSession {
+  redirectUrl: string;
+  expiresAt: string;
+}
+
 export interface CustomerDetails {
   email?: string;
   mobileNumber?: string;

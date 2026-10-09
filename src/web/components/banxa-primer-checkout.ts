@@ -89,7 +89,7 @@ export class BanxaPrimerCheckout extends HTMLElement {
     } else {
       this.removeAttribute('merchant-domain');
     }
-  }  
+  }
 
   get loaderDisabled(): boolean {
     return this.hasAttribute('loader-disabled');
